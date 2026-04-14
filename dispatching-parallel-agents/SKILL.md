@@ -5,301 +5,228 @@ description: Use when facing 2+ independent tasks that can be worked on without 
 
 # Dispatching Parallel Agents
 
-## Overview
+## Prerequisite: Team Mode Check
 
-You delegate tasks to specialized agents using Claude Code's **Agent Teams** feature. Teams provide structured coordination with shared task lists, automatic message delivery, and proper cleanup.
+**Before running this skill, you MUST check if team mode is enabled.**
 
-**Prerequisite:** Agent Teams requires experimental feature flag:
+Check `settings.json` for:
 ```json
-// settings.json
-{ "env": { "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1" } }
-```
-
-**Core principle:** Dispatch one agent per independent problem domain. Let them work concurrently with team coordination.
-
-## When to Use
-
-```dot
-digraph when_to_use {
-    "Multiple tasks?" [shape=diamond];
-    "Are they independent?" [shape=diamond];
-    "Single agent handles all" [shape=box];
-    "One agent per problem domain" [shape=box];
-    "Can they work in parallel?" [shape=diamond];
-    "Sequential agents" [shape=box];
-    "TEAM mode parallel dispatch" [shape=box];
-
-    "Multiple tasks?" -> "Are they independent?" [label="yes"];
-    "Are they independent?" -> "Single agent handles all" [label="no - related"];
-    "Are they independent?" -> "Can they work in parallel?" [label="yes"];
-    "Can they work in parallel?" -> "TEAM mode parallel dispatch" [label="yes"];
-    "Can they work in parallel?" -> "Sequential agents" [label="no - shared state"];
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
 }
 ```
 
-**Use when:**
+**If team mode is NOT enabled:**
+```
+⚠️ Team mode is required for parallel agent dispatch.
+
+To enable, add this to your settings.json:
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
+
+Then restart Claude Code and try again.
+```
+
+**If team mode is enabled, proceed with the workflow below.**
+
+## Overview
+
+Use Claude Code Agent Teams to dispatch parallel agents with shared task coordination. Each teammate works on independent tasks concurrently while the lead orchestrates and synthesizes results.
+
+**When to use:**
 - 3+ independent tasks with no shared state
 - Multiple subsystems broken independently
 - Each problem can be understood without context from others
 - No dependencies between tasks
 
-**Don't use when:**
-- Tasks are related (fix one might fix others)
-- Need to understand full system state
-- Agents would interfere with each other (editing same files)
+## Process
 
-## Team Mode Setup
-
-### Step 1: Check Feature Availability
-
-Before starting, verify the experimental feature is enabled:
-
-```
-Check settings.json for CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
-```
-
-If not enabled, prompt user to add it first.
-
-### Step 2: Create Team
+### Step 1: Create Team
 
 ```typescript
-// Create a team with descriptive name and purpose
 TeamCreate({
-  team_name: "parallel-debug-{timestamp}",
-  description: "Parallel investigation of independent problems",
+  team_name: "parallel-[feature]-[timestamp]",
+  description: "Parallel execution of [task description]",
   agent_type: "coordinator"
 })
 ```
 
-### Step 3: Create Tasks in Team Task List
+### Step 2: Create Tasks
 
-Use TaskCreate to add tasks to the team's shared task list:
+For each independent task:
 
 ```typescript
 TaskCreate({
-  subject: "Fix {problem} in {file}",
-  description: "Detailed description of the task",
-  activeForm: "Investigating {problem}"
+  subject: "[Task name]",
+  description: "[Detailed description of what to do]",
+  activeForm: "[What the agent is doing]"
 })
 ```
 
-### Step 4: Spawn Team Members
+### Step 3: Spawn Team Members (Implementers Only)
 
-Use Agent tool to spawn teammates into the team:
+**IMPORTANT:** Only spawn implementers as team members. Verifiers are spawned by implementers themselves (self-verification loop).
+
+For each task, spawn a teammate:
 
 ```typescript
 Agent({
-  description: "Fix {problem}",
-  prompt: "You are {name} on the team. Task: {detailed_task_description}. Report back when done.",
+  description: "[Task description]",
+  prompt: `## Your Task
+[Task description from TaskGet]
+Task ID: [from TaskGet]
+
+## TDD Requirement
+You MUST follow Red-Green-Refactor:
+1. Write a failing test FIRST (RED)
+2. Run test to confirm it fails
+3. Write minimal code to pass (GREEN)
+4. Run test to confirm it passes
+5. Refactor if needed
+
+## Self-Verification (MANDATORY)
+After completing your implementation:
+1. Spawn a verifier (see ./references/VERIFIER_SPAWN_TEMPLATE.md)
+2. Wait for verifier's report
+3. If PASS: Notify lead with "Task [ID] verified and complete"
+4. If FAIL: Read issues, fix, spawn new verifier, repeat
+
+## Report to Lead
+When verifier reports PASS:
+"Task [ID] verified and complete"`,
   subagent_type: "general-purpose",
-  name: "{name}",
-  team_name: "parallel-debug-{timestamp}"
+  name: "[unique-name]",
+  team_name: "parallel-[feature]-[timestamp]"
 })
 ```
 
-**Important:** The `name` field assigns the teammate's identifier, which appears in the team's config at `~/.claude/teams/{team-name}/config.json`.
+**Team members = implementers only (they self-verify)**
 
-### Step 5: Monitor and Coordinate
+### Step 4: Lead Monitoring
 
-- Messages from teammates are **automatically delivered** to you
-- No polling required - wait for completion notifications
-- Review task outputs as they arrive
-- Handle any conflicts or blockers
+**Lead tracks via TaskList:**
+- `in_progress` = implementer working OR verifying
+- `completed` = verifier reported PASS
 
-### Step 6: Shutdown Team
-
-**Always use the lead (this agent) to orchestrate shutdown:**
+**Lead acts when:**
+1. Receives "verified and complete" → Mark task completed
+2. No response after timeout → Send reminder to implementer
 
 ```
-Ask each teammate to shut down, then clean up the team
+Lead Flow:
+  Send task to implementer
+       ↓
+  Wait for "verified and complete"
+       ↓
+  If no response after [timeout]:
+    → Send reminder: "Please verify your work"
+    → Implementer must respond with status
 ```
 
-1. Request shutdown from each teammate via SendMessage or natural language
-2. Wait for all teammates to confirm shutdown
+### Step 5: Shutdown Team
+
+After all tasks complete:
+
+1. Send shutdown request to each teammate via SendMessage
+2. Wait for confirmations
 3. Execute TeamDelete to clean up resources
 
-**Warning:** Do NOT let teammates run TeamDelete - that can cause resource inconsistency.
-
-## Communication Patterns
-
-### Direct Message
-
 ```typescript
+// Shutdown each teammate
 SendMessage({
-  to: "teammate-name",
-  summary: "Task assignment",
-  message: "Your task is to fix the abort timing issue..."
+  to: "[teammate-name]",
+  message: "Please shut down - all tasks are complete"
 })
+
+// After all confirmations, delete the team
+TeamDelete()
 ```
 
-### Broadcast (use sparingly)
+## Team Communication
+
+### SendMessage
 
 ```typescript
+// Direct message to one teammate
+SendMessage({
+  to: "researcher-1",
+  summary: "Task assignment",
+  message: "Your task is to investigate..."
+})
+
+// Broadcast to all
 SendMessage({
   to: "*",
-  summary: "Team status update",
-  message: "All tasks are now complete, please wrap up"
+  summary: "Status update",
+  message: "All tasks complete, wrapping up"
 })
 ```
 
-Broadcast is expensive (linear cost in team size) - use direct messages when possible.
-
-## Task Management
-
-### Task States
-
-- `pending` - Waiting to be claimed
-- `in_progress` - Being worked on
-- `completed` - Done
-
-### Task Dependencies
-
-Tasks can have dependencies via `blockedBy`:
+### Task Management
 
 ```typescript
+// Update task status
 TaskUpdate({
-  taskId: "task-2",
-  addBlockedBy: ["task-1"]
+  taskId: "task-1",
+  status: "completed"
 })
-// task-2 cannot be claimed until task-1 completes
+
+// Check task list
+TaskList()
+
+// Get task details
+TaskGet({ taskId: "task-1" })
 ```
 
-When a blocking task completes, its dependents automatically unblock.
+## Task States
 
-## Agent Prompt Structure
-
-Good agent prompts for team dispatch:
-
-1. **Role definition** - Who they are on the team
-2. **Task clarity** - What specific problem to solve
-3. **Output format** - What to report back
-
-```markdown
-# Role: {problem} Investigator
-
-You are {name} on the team investigating {domain}.
-
-## Your Task
-Fix the failing tests in {file}:
-
-1. {test-name-1}: {expected behavior}
-2. {test-name-2}: {expected behavior}
-
-## Approach
-1. Read the test file to understand what's being tested
-2. Identify root cause - don't just increase timeouts
-3. Fix the underlying issue
-4. Run tests to verify
-
-## Constraints
-- Focus ONLY on this file
-- Do NOT modify unrelated code
-
-## Report
-When complete, send me a message with:
-- Root cause found
-- Changes made
-- Test results
-```
-
-## Complete Workflow Example
-
-```typescript
-// Step 1: Verify feature is enabled
-// Check settings.json for CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
-
-// Step 2: Create team
-TeamCreate({
-  team_name: "parallel-debug-001",
-  description: "Fixing 3 independent test failures"
-})
-
-// Step 3: Create tasks
-TaskCreate({
-  subject: "Fix abort timing tests",
-  description: "agent-tool-abort.test.ts has 3 timing-related failures",
-  activeForm: "Investigating abort timing"
-})
-
-TaskCreate({
-  subject: "Fix batch completion tests",
-  description: "batch-completion-behavior.test.ts has 2 failures",
-  activeForm: "Investigating batch execution"
-})
-
-TaskCreate({
-  subject: "Fix race condition test",
-  description: "tool-approval-race-conditions.test.ts has 1 failure",
-  activeForm: "Investigating race condition"
-})
-
-// Step 4: Spawn teammates
-Agent({
-  description: "Fix abort test failures",
-  prompt: "You are abort-dev on the team. Fix agent-tool-abort.test.ts: [details]. Report when done.",
-  subagent_type: "general-purpose",
-  name: "abort-dev",
-  team_name: "parallel-debug-001"
-})
-
-Agent({
-  description: "Fix batch test failures",
-  prompt: "You are batch-dev on the team. Fix batch-completion-behavior.test.ts: [details]. Report when done.",
-  subagent_type: "general-purpose",
-  name: "batch-dev",
-  team_name: "parallel-debug-001"
-})
-
-Agent({
-  description: "Fix race condition test failure",
-  prompt: "You are race-dev on the team. Fix tool-approval-race-conditions.test.ts: [details]. Report when done.",
-  subagent_type: "general-purpose",
-  name: "race-dev",
-  team_name: "parallel-debug-001"
-})
-
-// Step 5: Wait for completion notifications
-// Teammates will message when done
-
-// Step 6: Shutdown
-// "Please shut down now" -> each teammate
-// TeamDelete()
-```
+- `pending` — Waiting to be claimed
+- `in_progress` — Being worked on
+- `completed` — Done
 
 ## Common Mistakes
 
-**❌ No feature flag check:** TeamCreate fails without experimental flag
-**✅ Check first:** Verify `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in settings.json
+**❌ No feature flag check** — TeamCreate fails without experimental flag
+**✅ Check first** — Verify `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`
 
-**❌ Unfocused scope:** "Fix all tests" - agent gets lost
-**✅ Specific:** "Fix {file} only" - narrow scope
+**❌ Unfocused scope** — "Fix all tests" - agent gets lost
+**✅ Specific** — "Fix {file} only" - narrow scope
 
-**❌ No output specification:** "Fix it" - you don't know what changed
-**✅ Specific:** "Report root cause and test results"
+**❌ No output specification** — "Fix it" - you don't know what changed
+**✅ Specific** — "Report root cause and test results"
 
-**❌ Teammate runs cleanup:** Can cause resource inconsistency
-**✅ Lead runs cleanup:** Always use lead to execute TeamDelete()
+**❌ Teammate runs cleanup** — Can cause resource inconsistency
+**✅ Lead runs cleanup** — Always use lead to execute TeamDelete()
 
-## When NOT to Use Team Mode
+## When NOT to Use
 
 **Related failures:** Fixing one might fix others - investigate together first
 **Need full context:** Understanding requires seeing entire system
 **Exploratory debugging:** You don't know what's broken yet
 **Shared state:** Agents would interfere (editing same files)
 
-## Key Benefits of Team Mode
+## Key Benefits
 
-1. **Structured coordination** - Shared task list with dependency support
-2. **Automatic messaging** - No polling, messages delivered automatically
-3. **Parallelization** - Multiple investigations happen simultaneously
-4. **Focus** - Each agent has narrow scope, less context to track
-5. **Isolation** - Agents don't interfere with each other
-6. **Proper cleanup** - Guaranteed resource cleanup via lead orchestration
+1. **Structured coordination** — Shared task list with dependency support
+2. **Automatic messaging** — No polling, messages delivered automatically
+3. **Parallelization** — Multiple investigations happen simultaneously
+4. **Focus** — Each agent has narrow scope, less context to track
+5. **Isolation** — Agents don't interfere with each other
+6. **Proper cleanup** — Guaranteed resource cleanup via lead orchestration
+7. **Independent verification** — Each task reviewed by separate verifier before completion
+8. **TDD enforcement** — Red-Green cycle verified, not just claimed
+9. **Quality gate** — Tasks can't be marked complete without passing review
 
-## Verification
+## Quality Rules
 
-After agents return:
-1. **Review each summary** - Understand what changed
-2. **Check for conflicts** - Did agents edit same code?
-3. **Run full suite** - Verify all fixes work together
-4. **Spot check** - Agents can make systematic errors
+1. **Self-verification is mandatory** — Implementer must spawn verifier, cannot skip
+2. **Verifier is ephemeral** — Spawn fresh subagent per verification, it exits after
+3. **Lead tracks via TaskList** — `in_progress` until "verified and complete"
+4. **Lead can prompt stuck implementers** — Send reminder if no response after timeout
+5. **Fix and re-verify** — Issues found → implementer fixes → spawn new verifier
+6. **No report without verification** — "Done" only after verifier reports PASS

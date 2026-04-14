@@ -7,7 +7,7 @@ description: Use when you have a spec or requirements for a multi-step task, bef
 
 ## Overview
 
-Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD.
+Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
 
 Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
 
@@ -21,6 +21,21 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 ## Scope Check
 
 If the spec covers multiple independent subsystems, it should have been broken into sub-project specs during brainstorming. If it wasn't, suggest breaking this into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
+
+## Research Document Review
+
+**Before writing any tasks**, check if a tech research document exists:
+```
+docs/superpowers/research/<topic>-tech-research.md
+```
+
+If it exists:
+1. Read the research document thoroughly
+2. Note the best practices, core patterns, and pitfalls identified
+3. Ensure your plan incorporates the recommended patterns
+4. Flag any research findings that contradict your approach before proceeding
+
+If no research document exists, proceed normally.
 
 ## File Structure
 
@@ -40,6 +55,7 @@ This structure informs the task decomposition. Each task should produce self-con
 - "Run it to make sure it fails" - step
 - "Implement the minimal code to make the test pass" - step
 - "Run the tests and make sure they pass" - step
+- "Commit" - step
 
 ## Plan Document Header
 
@@ -94,6 +110,12 @@ def function(input):
 Run: `pytest tests/path/test.py::test_name -v`
 Expected: PASS
 
+- [ ] **Step 5: Commit**
+
+```bash
+git add tests/path/test.py src/path/file.py
+git commit -m "feat: add specific feature"
+```
 ````
 
 ## No Placeholders
@@ -110,7 +132,7 @@ Every step must contain the actual content an engineer needs. These are **plan f
 - Exact file paths always
 - Complete code in every step — if a step changes code, show the code
 - Exact commands with expected output
-- DRY, YAGNI, TDD
+- DRY, YAGNI, TDD, frequent commits
 
 ## Self-Review
 
@@ -122,21 +144,18 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 
 **3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 
+**4. Research document regression:** If a tech research document exists:
+   - Check each best practice from the research is addressed in the plan
+   - Verify the pitfalls are accounted for or explicitly noted as not applicable
+   - Ensure core patterns from the research are used correctly
+   - Note any gaps where the plan diverges from research recommendations
+
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 
 ## Execution Handoff
 
-After saving the plan, offer execution choice:
+After saving the plan, ask the user to confirm the execution mode，Ask the user to confirm the mode, using the environment's native question or approval mechanism if it has one:
 
-**"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Three execution options:**
-
-**1. Subagent-Driven (recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration
-
-**2. TEAM Mode** - Dispatch parallel agents for independent tasks, maximum concurrency when tasks have no dependencies
-
-**3. Inline Execution** - Execute tasks in this session using executing-plans, batch execution with checkpoints
-
-**Which approach?"**
 
 **If Subagent-Driven chosen:**
 - **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
