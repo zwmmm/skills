@@ -1,0 +1,7 @@
+No,Template Name,File Name,Description,Keywords,Use Cases,Required Components,Complexity
+1,form-page,form-page.vue,表单提交页面，包含表单验证、加载状态和错误处理,form login register submit validation input button,"用户注册、登录、设置、反馈表单、信息采集","wd-input, wd-button, wd-form, wd-form-item, wd-checkbox",Low
+2,list-page,list-page.vue,可滚动列表页面，支持下拉刷新和上拉加载更多,list scroll refresh load-more infinite-scroll news feed,"新闻列表、订单列表、商品列表、聊天列表、搜索结果","wd-cell, wd-pull-refresh, wd-infinite-load, wd-empty, scroll-view",Low
+3,detail-page,detail-page.vue,详情页面，包含图片轮播、信息展示和操作按钮,detail product article image gallery info,"商品详情、文章详情、用户资料、订单详情","wd-swiper, wd-cell-group, wd-button, wd-tabs",Medium
+4,tab-page,tab-page.vue,多标签页面，首页或分类页面,tab tabs home category navigation,"首页、分类页、个人中心、多模块展示","wd-tabs, wd-tab, wd-tabbar, wd-tabbar-item",Medium
+5,search-page,search-page.vue,搜索页面，包含搜索框、筛选和结果列表,search filter result keyword query,"商品搜索、内容搜索、用户搜索、筛选页","wd-search, wd-cell, wd-drop-menu, wd-empty",Medium
+6,grid-page,grid-page.vue,网格布局页面，宫格展示,grid category photo album,"分类网格、功能导航、相册、图标墙","wd-grid, wd-grid-item, wd-image",Low

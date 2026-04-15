@@ -1,0 +1,16 @@
+No,Component Name,HTML Tag,Description,Props,Platform Support,Docs URL
+1,view,<view>,视图容器，类似 div,"class, style, hover-class",All,https://uniapp.dcloud.net.cn/component/view.html
+2,text,<text>,文本组件，类似 span,"selectable, space, decode",All,https://uniapp.dcloud.net.cn/component/text.html
+3,image,<image>,图片组件,"src, mode, lazy-load, webp",All,https://uniapp.dcloud.net.cn/component/image.html
+4,scroll-view,<scroll-view>,可滚动视图区域,"scroll-x, scroll-y, upper-threshold, lower-threshold",All,https://uniapp.dcloud.net.cn/component/scroll-view.html
+5,swiper,<swiper>,轮播图容器,"indicator-dots, autoplay, interval, circular",All,https://uniapp.dcloud.net.cn/component/swiper.html
+6,swiper-item,<swiper-item>,轮播图项,"",All,https://uniapp.dcloud.net.cn/component/swiper.html
+7,navigator,<navigator>,页面跳转,"url, open-type, delta",All,https://uniapp.dcloud.net.cn/component/navigator.html
+8,input,<input>,输入框,"type, placeholder, value, maxlength",All,https://uniapp.dcloud.net.cn/component/input.html
+9,textarea,<textarea>,多行输入框,"placeholder, maxlength, auto-height",All,https://uniapp.dcloud.net.cn/component/textarea.html
+10,button,<button>,按钮,"size, type, plain, disabled, loading",All,https://uniapp.dcloud.net.cn/component/button.html
+11,picker,<picker>,选择器,"mode, range, value",All,https://uniapp.dcloud.net.cn/component/picker.html
+12,picker-view,<picker-view>,嵌入式选择器,"value, indicator-style",All,https://uniapp.dcloud.net.cn/component/picker-view.html
+13,radio,<radio>,单选项,"value, checked, disabled",All,https://uniapp.dcloud.net.cn/component/radio.html
+14,checkbox,<checkbox>,复选项,"value, checked, disabled",All,https://uniapp.dcloud.net.cn/component/checkbox.html
+15,switch,<switch>,开关选择器,"checked, type, color",All,https://uniapp.dcloud.net.cn/component/switch.html

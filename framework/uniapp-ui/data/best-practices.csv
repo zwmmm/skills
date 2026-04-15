@@ -1,0 +1,31 @@
+No,Category,Guideline,Description,Do,Don't,Code Good,Code Bad,Severity,Platform
+1,Components,使用 UniApp 基础组件,始终使用 view text image 等 UniApp 组件,使用 <view> <text> <image>,使用 <div> <span> <img>,"<view class=""container""><text>文本</text></view>","<div class=""container""><span>文本</span></div>",High,All
+2,Navigation,使用 UniApp 导航 API,使用 uni.navigateTo 而非 Vue Router,uni.navigateTo(),this.$router.push(),"uni.navigateTo({ url: '/pages/detail' })","this.$router.push('/detail')",High,All
+3,Storage,使用 UniApp 存储 API,使用 uni.setStorageSync 进行跨平台存储,uni.setStorageSync(),localStorage.setItem(),"uni.setStorageSync('key', value)","localStorage.setItem('key', value)",Medium,Mini Program
+4,Events,避免 Web-only 事件,不使用 onMouseOver 等 Web 事件,使用 @tap @touchstart,使用 @mouseover @mouseenter,"<view @tap=""handleClick"">","<div @mouseover=""handleHover"">",High,All
+5,Styles,使用 UnoCSS 原子类,优先使用原子化样式类,使用 flex items-center p-4,使用内联样式或大量自定义 CSS,"<view class=""flex items-center p-4"">","<view style=""display:flex;padding:16px"">",Medium,All
+6,State,使用 ref 和 reactive,使用 Composition API 管理状态,const count = ref(0),const count = 0,"const loading = ref(false)",let loading = false,High,All
+7,Lifecycle,使用 UniApp 生命周期,使用 onLoad onShow 而非 Vue 生命周期,onLoad() onShow(),mounted() created(),onLoad(() => { console.log('页面加载') }),mounted() { console.log('mounted') },High,All
+8,API Calls,错误处理,异步操作必须有 try-catch,使用 try-catch,不处理错误,"try { await api() } catch(e) { console.error(e) }",await api(),High,All
+9,Loading,显示加载状态,数据加载时显示 loading,使用 loading 状态,直接显示空数据或报错,"<wd-loading v-if=""loading"" />","<view v-if=""!data"">加载中</view>",Medium,All
+10,Empty,显示空状态,无数据时显示友好提示,使用 wd-empty 组件,显示空白或报错,"<wd-empty v-if=""!list.length"" />","<view v-if=""!list.length"" />",Medium,All
+11,Performance,长列表优化,使用虚拟滚动或分页,分页加载 or 虚拟列表,一次性渲染大量数据,"<wd-infinite-load @load=""loadMore"" />",list.map(item => <Item />),High,All
+12,Performance,图片懒加载,使用 lazy-load 属性,lazy-load=""true"",不设置懒加载,"<image lazy-load=""true"" />","<image :src=""url"" />",Medium,All
+13,Images,使用相对路径或 HTTPS,图片路径必须正确,相对路径 or https://,file:// or 本地绝对路径,"<image src=""/static/logo.png"" />","<image src=""file:///logo.png"" />",High,All
+14,Form,表单验证,使用 wd-form 的 rules 验证,定义 rules 对象,手动验证每个字段,":rules=""{username:[{required:true}]}"",if(!username){showError()},High,All
+15,Form,防抖用户输入,搜索框使用防抖,使用 debounce 或 useDeferredValue,每次输入都触发搜索,const debouncedSearch = debounce(search),@input=""search"" (no debounce),Medium,All
+16,TypeScript,使用类型注解,定义 Props 和 State 类型,defineProps<{...}>(),defineProps({}) without types,"defineProps<{title:string}>()","defineProps({title:{type:String}})",Medium,All
+17,Components,组件导入,正确导入 WotUI 组件,按需导入,全局导入或不导入,"import { WdButton } from 'wot-design-uni'",使用未导入的组件,High,All
+18,Platform,条件编译,使用条件编译处理平台差异,#ifdef #endif,运行时判断平台,"#ifdef MP-WEIXIN\n// 微信小程序代码\n#endif",if(process.env.platform === 'mp-weixin'),Low,All
+19,Network,请求超时,设置合理的请求超时,timeout: 10000,不设置超时或过长超时,"uni.request({timeout:10000})",uni.request({}) // no timeout,Medium,All
+20,Security,防止 XSS,用户输入内容需转义,使用 v-text 或转义函数,使用 v-html 显示用户输入,"<text>{{ userInput }}</text>","<view v-html=""userInput"" />",High,All
+21,UX,反馈及时,操作后立即给予反馈,使用 Toast 或 Loading,无反馈或延迟反馈,"uni.showToast({title:'操作成功'})",console.log('success') // 无用户反馈,High,All
+22,UX,按钮防重复点击,防止用户快速多次点击,设置 loading 状态禁用按钮,不处理重复点击,":loading=""submitting"" :disabled=""submitting""",@click=""submit"" (no protection),High,All
+23,Responsive,响应式布局,使用 rpx 或 UnoCSS 响应式类,使用 rpx 或 sm: md: lg:,使用固定 px 值,"<view class=""w-750rpx md:w-full"">","<view style=""width:375px"">",Medium,All
+24,Accessibility,最小触摸区域,按钮至少 44px x 44px,min-width 和 min-height,小于 44px 的可点击区域,"<wd-button class=""min-w-44px min-h-44px"">","<view @tap="""" class=""w-20px h-20px"">",Medium,All
+25,Code Quality,清理 console.log,生产环境移除调试代码,移除或使用环境变量控制,保留 console.log,"if(process.env.NODE_ENV==='dev')console.log()","console.log('debug')",Low,All
+26,Naming,组件命名规范,使用 PascalCase 命名组件,ProductCard UserAvatar,product-card or user_avatar,"<ProductCard />","<product-card /> or <product_card />",Low,All
+27,Props,Props 验证,定义 Props 类型和默认值,使用 TypeScript 类型或默认值,不验证 Props,"defineProps<{size?:'small'|'large'}>()","defineProps(['size'])",Medium,All
+28,Events,事件命名,使用 kebab-case 命名事件,@click @custom-event,@onClick @customEvent,"@click=""handler"" @update-value=""handler""","@onClick=""handler"" @updateValue=""handler""",Low,All
+29,Performance,避免不必要的 re-render,使用 computed 和 watch 优化,使用 computed 缓存计算结果,在 render 中重复计算,const fullName = computed(() => firstName + lastName),const fullName = firstName + lastName (in template),Medium,All
+30,Error,错误边界,关键操作设置错误处理,try-catch + 友好错误提示,让错误崩溃应用,"try{await api()}catch(e){showError(e)}",await api() // may crash,High,All

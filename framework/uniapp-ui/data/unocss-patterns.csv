@@ -1,0 +1,21 @@
+No,Pattern Name,Use Case,CSS Classes,Example,Description
+1,Flex Center,垂直水平居中内容,flex items-center justify-center,"<view class=""flex items-center justify-center h-screen"">居中内容</view>",使用 Flexbox 实现内容居中
+2,Card Container,卡片容器,p-4 rounded-lg bg-white shadow-sm,"<view class=""p-4 rounded-lg bg-white shadow-sm"">卡片内容</view>",标准卡片样式：内边距、圆角、背景、阴影
+3,Full Width Button,全宽按钮,w-full py-3 text-center bg-primary text-white rounded,"<view class=""w-full py-3 text-center bg-primary text-white rounded"">按钮</view>",全宽度主要操作按钮
+4,Flex Between,两端对齐,flex items-center justify-between,"<view class=""flex items-center justify-between""><text>左</text><text>右</text></view>",左右两端对齐布局
+5,Flex Column,垂直排列,flex flex-col gap-4,"<view class=""flex flex-col gap-4""><view>项1</view><view>项2</view></view>",垂直方向排列，带间距
+6,Grid Layout,网格布局,grid grid-cols-3 gap-4,"<view class=""grid grid-cols-3 gap-4""><view /><view /><view /></view>",3列网格布局
+7,Sticky Header,固定头部,sticky top-0 z-10 bg-white,"<view class=""sticky top-0 z-10 bg-white"">导航栏</view>",顶部粘性定位
+8,Safe Area,安全区域,pt-safe pb-safe,"<view class=""pt-safe pb-safe"">内容</view>",处理刘海屏和底部安全区域
+9,Scroll Container,滚动容器,h-screen overflow-y-auto,"<scroll-view class=""h-screen overflow-y-auto"" scroll-y>内容</scroll-view>",全屏可滚动容器
+10,Avatar Circle,圆形头像,w-40px h-40px rounded-full object-cover,"<image class=""w-40px h-40px rounded-full object-cover"" />",圆形头像样式
+11,Badge Indicator,徽章指示器,absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1,"<view class=""absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1"">99+</view>",徽章数字显示
+12,Divider Line,分割线,border-t border-gray-200 my-4,"<view class=""border-t border-gray-200 my-4"" />",水平分割线
+13,Text Ellipsis,文本省略,truncate,"<text class=""truncate"">很长的文本内容...</text>",单行文本溢出省略
+14,Skeleton Loading,骨架屏,animate-pulse bg-gray-200 rounded,"<view class=""animate-pulse bg-gray-200 rounded h-20px w-full"" />",加载占位骨架屏
+15,Tag Label,标签样式,inline-block px-2 py-1 text-xs bg-blue-100 text-blue-600 rounded,"<view class=""inline-block px-2 py-1 text-xs bg-blue-100 text-blue-600 rounded"">标签</view>",彩色标签样式
+16,Input Container,输入框容器,flex items-center border border-gray-300 rounded px-3 py-2,"<view class=""flex items-center border border-gray-300 rounded px-3 py-2""><input /></view>",输入框外层容器
+17,Overlay Mask,遮罩层,fixed inset-0 bg-black/50 z-50,"<view class=""fixed inset-0 bg-black/50 z-50"" />",半透明遮罩层
+18,Bottom Fixed,底部固定,fixed bottom-0 left-0 right-0 bg-white border-t,"<view class=""fixed bottom-0 left-0 right-0 bg-white border-t"">底部栏</view>",底部固定操作栏
+19,Empty State,空状态容器,flex flex-col items-center justify-center py-20 text-gray-400,"<view class=""flex flex-col items-center justify-center py-20 text-gray-400"">暂无数据</view>",空状态居中显示
+20,Form Label,表单标签,text-sm text-gray-700 mb-2,"<text class=""text-sm text-gray-700 mb-2"">用户名</text>",表单字段标签
