@@ -23,6 +23,107 @@ If you haven't completed Phase 1, you cannot propose fixes.
 
 ## When to Use
 
+**Start here:** When encountering any bug, test failure, or unexpected behavior.
+
+### Launch Debugger Mode?
+
+**Before beginning, ask the user:**
+
+> "启动 Debugger 模式（先验证后解决）？"
+
+```mermaid
+---
+title: Debugger Mode
+---
+flowchart LR
+    A[Analyze possible causes] --> B[Inject logs]
+    B --> C[Collect]
+    C --> D[Verify hypothesis]
+    D -->|success| E[Apply fix]
+    D -->|fail| A
+    E --> F{Confirm fix?}
+    F -->|yes| G[Remove logs]
+    F -->|no| A
+    G --> H([End])
+```
+
+**If yes:** Follow the Debugger Mode flow (detailed below).
+
+**If no:** Proceed with standard systematic debugging (Phase 1-4 below).
+
+---
+
+### Debugger Mode (Verify Before Fix)
+
+Debugger Mode is a cyclic verification approach: **confirm the hypothesis before applying any fix**. Avoids blind guessing and ineffective fixes.
+
+> **Key difference from standard process:** Uses log injection cycle instead of static analysis. Better for complex/runtime issues where you need to observe actual data flow.
+
+#### Step 1: Analyze possible causes
+
+List all potential causes (2-5). Do not guess which is correct—list them all.
+
+#### Step 2: Inject logs
+
+For **each possible cause**, add diagnostic logs at key points:
+- Function entry/exit
+- Conditional branches
+- Data transformation nodes
+- API/database calls
+
+#### Step 3: Collect
+
+Run the program and collect log output.
+Confirm what data each log statement printed.
+
+> **See also:** `condition-based-waiting.md` if you need to wait for async operations — use condition polling instead of arbitrary delays.
+
+#### Step 4: Verify hypothesis
+
+Analyze the logs to identify which cause is **confirmed**:
+- Log shows expected data? → Hypothesis correct
+- Log shows unexpected data? → Hypothesis wrong
+- No log output? → Need more diagnostic points
+
+> **See also:** `root-cause-tracing.md` for backward tracing technique if error is deep in call stack
+
+**Verification success (root cause found)** → Apply fix (Step 5)
+
+**Verification failed (no hypothesis confirmed)** → Return to Step 1 for re-analysis
+
+#### Step 5: Apply fix
+
+Implement the fix based on the verified root cause.
+Do not modify unrelated code.
+
+#### Step 6: Confirm fix with user
+
+> "Apply this fix?"
+
+- **Yes**: Apply fix, remove injected logs, end
+- **No**: Do not apply fix, but remove logs, continue cycling (return to Step 1)
+
+> **See also:** `defense-in-depth.md` — after applying the fix, add validation at multiple layers to make the bug structurally impossible.
+
+#### Step 7: Remove logs
+
+Strip all injected diagnostic code.
+
+#### Loop termination
+
+- User confirms and applies the fix
+- User explicitly declines to fix
+
+#### Supporting techniques
+
+When following Debugger Mode, these techniques are available:
+
+- **`root-cause-tracing.md`** — Trace bugs backward through call chain to find original trigger (Step 4)
+- **`condition-based-waiting.md`** — Wait for actual conditions instead of arbitrary delays (Step 3)
+- **`defense-in-depth.md`** — Add validation at multiple layers after applying fix (Step 6)
+
+---
+
 Use for ANY technical issue:
 - Test failures
 - Bugs in production
@@ -279,7 +380,7 @@ If systematic investigation reveals issue is truly environmental, timing-depende
 
 These techniques are part of systematic debugging and available in this directory:
 
-- **`root-cause-tracing.md`** - Trace bugs backward through call stack to find original trigger
+- **`root-cause-tracing.md`** - Trace bugs backward through call stack to find original trigger (works with both standard process and Debugger Mode)
 - **`defense-in-depth.md`** - Add validation at multiple layers after finding root cause
 - **`condition-based-waiting.md`** - Replace arbitrary timeouts with condition polling
 
