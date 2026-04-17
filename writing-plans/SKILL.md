@@ -22,6 +22,15 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 If the spec covers multiple independent subsystems, it should have been broken into sub-project specs during brainstorming. If it wasn't, suggest breaking this into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
 
+## Commit Preference
+
+**Before writing the plan**, ask the user whether they want commit steps included in each task:
+
+"Should the plan include automatic commit steps after each task is verified? (Recommended for solo work, skip for team branches or when you prefer manual commit control)"
+
+- **If yes:** Include a commit step at the end of each task
+- **If no:** Omit commit steps from the plan
+
 ## Research Document Review
 
 **Before writing any tasks**, check if a tech research document exists:
@@ -55,7 +64,7 @@ This structure informs the task decomposition. Each task should produce self-con
 - "Run it to make sure it fails" - step
 - "Implement the minimal code to make the test pass" - step
 - "Run the tests and make sure they pass" - step
-- "Commit" - step
+- "Commit" - step (if commit preference enabled)
 
 ## Plan Document Header
 
@@ -110,7 +119,7 @@ def function(input):
 Run: `pytest tests/path/test.py::test_name -v`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 5: Commit** (if commit preference enabled)
 
 ```bash
 git add tests/path/test.py src/path/file.py
